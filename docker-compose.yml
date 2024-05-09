@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    container_name: effective_mobile-cars-postgres-1
+    environment:
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_USER: "cars"
+      POSTGRES_DB: "cars"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - "5432:5432"
+    volumes: 
+      - ./db/migrations/:/docker-entrypoint-initdb.d
+      - ../.:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cars -d cars"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+  effective_mobile.cars:
+    image: m0rdovorot/effective_mobile.cars:latest
+    ports:
+      - "8001:8001"
