@@ -1,39 +1,47 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/M0rdovorot/effective_mobile/configs"
 	"github.com/M0rdovorot/effective_mobile/db/postgresql"
-	"github.com/M0rdovorot/effective_mobile/internal/handlers"
-	"github.com/M0rdovorot/effective_mobile/internal/repositories/banners"
+	_ "github.com/M0rdovorot/effective_mobile/docs"
+	handlers "github.com/M0rdovorot/effective_mobile/internal/delivery"
+	"github.com/M0rdovorot/effective_mobile/internal/repositories/cars"
+	"github.com/M0rdovorot/effective_mobile/internal/usecases"
+
+	_ "github.com/go-swagger/go-swagger"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func main() {
-	pool := banners.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))
-	
+	conf := configs.New()
+
 	var db postgresql.Database
-	err := db.Connect()
+	err := db.Connect(conf.DB)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer db.Close()
-	
-	cashRepository := banners.CreateBannerRedisStorage(pool)
-	bannersRepository := banners.CreateBannerStorage(db.GetDB())
-	bannerHandler := handlers.CreateBannerHandler(bannersRepository, cashRepository)
-	
-	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/user_banner", handlers.NewWrapper(bannerHandler.GetUserBanner).ServeHTTP).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/banner", handlers.NewWrapper(bannerHandler.GetAllBanners).ServeHTTP).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/banner", handlers.NewWrapper(bannerHandler.CreateBanner).ServeHTTP).Methods(http.MethodPost)
-	router.HandleFunc("/api/v1/banner/{id:[0-9]+}", handlers.NewWrapper(bannerHandler.PatchBanner).ServeHTTP).Methods(http.MethodPatch)
-	router.HandleFunc("/api/v1/banner/{id:[0-9]+}", handlers.NewWrapper(bannerHandler.DeleteBanner).ServeHTTP).Methods(http.MethodDelete)
+	carsRepository := cars.CreateCarStorage(db.GetDB(), conf)
+	carsUsecases := usecases.CreateUsecases(carsRepository, conf)
+	carHandler := handlers.CreateCarHandler(carsUsecases)
 
-	err = http.ListenAndServe(":8001", router)
+	router := mux.NewRouter()
+	router.HandleFunc("/api/v1/car", handlers.NewWrapper(carHandler.GetCars).ServeHTTP).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/car", handlers.NewWrapper(carHandler.CreateCars).ServeHTTP).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/car/{id:[0-9]+}", handlers.NewWrapper(carHandler.PatchCar).ServeHTTP).Methods(http.MethodPatch)
+	router.HandleFunc("/api/v1/car/{id:[0-9]+}", handlers.NewWrapper(carHandler.DeleteCar).ServeHTTP).Methods(http.MethodDelete)
+
+	err = http.ListenAndServe(conf.BackendServerPort, router)
 	log.Println(err)
 }

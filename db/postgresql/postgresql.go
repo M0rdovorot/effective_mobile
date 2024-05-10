@@ -21,11 +21,14 @@ type IDatabase interface {
 
 type Database struct {
 	db *sql.DB
+	Config configs.DBConfig
 }
 
-func (database *Database) Connect() error {
+func (database *Database) Connect(config configs.DBConfig) error {
+	database.Config = config
+
 	var err error
-	database.db, err = sql.Open(configs.DriverSQL, configs.DatabaseURL)
+	database.db, err = sql.Open(database.Config.DriverSQL, database.Config.DatabaseURL)
 	if err != nil {
 		return err
 	}
@@ -53,8 +56,8 @@ func (database *Database) getMigrateInstance() (*migrate.Migrate, error) {
 		return nil, err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		configs.SourceDriver+configs.MigrationsPath,
-		configs.DatabaseName,
+		database.Config.SourceDriver+database.Config.MigrationsPath,
+		database.Config.DatabaseName,
 		driver,
 	)
 	if err != nil {

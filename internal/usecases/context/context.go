@@ -6,21 +6,8 @@ import (
 )
 
 type writerKey struct{}
-type tokenKey struct{}
 type routesVarsKey struct{}
 type queryVars struct{}
-
-func GetToken(ctx context.Context) string {
-	if ctx.Value(tokenKey{}) != nil {
-		return ctx.Value(tokenKey{}).(string)
-	}
-
-	return ""
-}
-
-func AddToken(ctx context.Context, token string) context.Context {
-	return context.WithValue(ctx, tokenKey{}, token)
-}
 
 func GetVars(ctx context.Context) map[string]string {
 	if ctx.Value(routesVarsKey{}) != nil {
@@ -31,7 +18,7 @@ func GetVars(ctx context.Context) map[string]string {
 }
 
 func GetQueryVars(ctx context.Context) map[string]string {
-	if ctx.Value(routesVarsKey{}) != nil {
+	if ctx.Value(queryVars{}) != nil {
 		return ctx.Value(queryVars{}).(map[string]string)
 	}
 

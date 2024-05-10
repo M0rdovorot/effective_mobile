@@ -1,0 +1,224 @@
+basePath: /
+consumes:
+    - application/json
+definitions:
+    Body:
+        properties:
+            id:
+                format: int64
+                type: integer
+                x-go-name: Id
+            mark:
+                type: string
+                x-go-name: Mark
+            model:
+                type: string
+                x-go-name: Model
+            owner:
+                properties:
+                    name:
+                        type: string
+                        x-go-name: Name
+                    patronymic:
+                        type: string
+                        x-go-name: Patronymic
+                    surname:
+                        type: string
+                        x-go-name: Surname
+                type: object
+                x-go-name: Owner
+            page:
+                format: int64
+                type: integer
+                x-go-name: Page
+            regNum:
+                type: string
+                x-go-name: RegNum
+            year:
+                format: int64
+                type: integer
+                x-go-name: Year
+        type: object
+        x-go-package: github.com/M0rdovorot/effective_mobile/docs
+    ErrorParams:
+        properties:
+            error:
+                type: string
+                x-go-name: Error
+        type: object
+        x-go-package: github.com/M0rdovorot/effective_mobile/docs
+host: localhost:8001
+info:
+    description: Documentation of our awesome API.
+    title: awesome.
+    version: 1.0.0
+paths:
+    /api/v1/car:
+        get:
+            description: Get cars by filter
+            operationId: idOfGetCarsEndpoint
+            parameters:
+                - in: query
+                  name: RegNum
+                  type: string
+                - in: query
+                  name: Mark
+                  type: string
+                - in: query
+                  name: Model
+                  type: string
+                - format: int64
+                  in: query
+                  name: Year
+                  type: integer
+                - in: query
+                  name: Name
+                  type: string
+                - in: query
+                  name: Surname
+                  type: string
+                - in: query
+                  name: Patronymic
+                  type: string
+            responses:
+                "200":
+                    $ref: '#/responses/GetCarsResponse'
+                "400":
+                    $ref: '#/responses/ErrorResponse'
+                "500":
+                    $ref: '#/responses/ErrorResponse'
+            tags:
+                - GetCars
+        post:
+            description: Create cars
+            operationId: idOfCreateCarsEndpoint
+            parameters:
+                - in: body
+                  name: RegNum
+                  schema:
+                    type: string
+                - in: body
+                  name: Mark
+                  schema:
+                    type: string
+                - in: body
+                  name: Model
+                  schema:
+                    type: string
+                - in: body
+                  name: Year
+                  schema:
+                    format: int64
+                    type: integer
+                - in: body
+                  name: Name
+                  schema:
+                    type: string
+                - in: body
+                  name: Surname
+                  schema:
+                    type: string
+                - in: body
+                  name: Patronymic
+                  schema:
+                    type: string
+            responses:
+                "201":
+                    $ref: '#/responses/CreateCarReponse'
+                "400":
+                    $ref: '#/responses/ErrorResponse'
+                "500":
+                    $ref: '#/responses/ErrorResponse'
+            tags:
+                - CreateCars
+    /api/v1/car/{Id}:
+        delete:
+            description: Delete car
+            operationId: idOfDeleteCarEndpoint
+            parameters:
+                - format: int64
+                  in: path
+                  name: Id
+                  required: true
+                  type: integer
+            responses:
+                "204":
+                    description: ""
+                "400":
+                    $ref: '#/responses/ErrorResponse'
+                "404":
+                    $ref: '#/responses/ErrorResponse'
+                "500":
+                    $ref: '#/responses/ErrorResponse'
+            tags:
+                - DeleteCar
+        patch:
+            description: Patch car
+            operationId: idOfPatchCarEndpoint
+            parameters:
+                - format: int64
+                  in: path
+                  name: Id
+                  required: true
+                  type: integer
+                - in: body
+                  name: RegNum
+                  schema:
+                    type: string
+                - in: body
+                  name: Mark
+                  schema:
+                    type: string
+                - in: body
+                  name: Model
+                  schema:
+                    type: string
+                - in: body
+                  name: Year
+                  schema:
+                    format: int64
+                    type: integer
+                - in: body
+                  name: Name
+                  schema:
+                    type: string
+                - in: body
+                  name: Surname
+                  schema:
+                    type: string
+                - in: body
+                  name: Patronymic
+                  schema:
+                    type: string
+            responses:
+                "204":
+                    description: ""
+                "400":
+                    $ref: '#/responses/ErrorResponse'
+                "404":
+                    $ref: '#/responses/ErrorResponse'
+                "500":
+                    $ref: '#/responses/ErrorResponse'
+            tags:
+                - PatchCar
+produces:
+    - application/json
+responses:
+    CreateCarReponse:
+        description: ""
+        schema:
+            items:
+                format: int64
+                type: integer
+            type: array
+    ErrorResponse:
+        description: ""
+        schema:
+            $ref: '#/definitions/ErrorParams'
+    GetCarsResponse:
+        description: ""
+        schema:
+            $ref: '#/definitions/Body'
+schemes:
+    - http
+swagger: "2.0"

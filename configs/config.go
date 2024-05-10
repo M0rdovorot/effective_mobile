@@ -1,27 +1,52 @@
 package configs
 
-const (
-	BackendServerPort  = ":8001"
+import "os"
 
-	DriverSQL            = "pgx"
-	DatabaseDMS          = "postgres"
-	DatabaseUser         = "banners"
-	DatabaseUserPassword = "12345"
-	// DatabaseServerIP     = "localhost"
-	DatabaseServerIP = "effective_mobile-banners-postgres-1"
-	DatabaseServerPort   = "5432"
-	DatabaseName         = "banners"
-	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
-		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
-		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath      = "db/migrations"
-	SourceDriver        = "file://"
-	BannerTable           = "public.banner"
-	TagToBannerTable = "public.banner_to_tag"
+type DBConfig struct {
+	DriverSQL string
+	DatabaseDMS string
+	DatabaseUser string
+	DatabaseUserPassword string
+	DatabaseServerIP string
+	DatabaseServerPort string
+	DatabaseName string
+	DatabaseURL string
+	MigrationsPath string
+	SourceDriver string
+}
 
-	// RedisServerIP   = "127.0.0.1"
-	RedisServerPort = "6379"
-	RedisServerIP = "effective_mobile-banners-redis-1"
+type Config struct {
+	DB DBConfig
+	CarInfoAPI string
+	BackendServerPort string
+}
 
-	APIURL = "http://localhost:8001/api/v1/"
-)
+func New() *Config {
+	config := &Config{
+		DB: DBConfig{
+			DriverSQL: getEnv("DRIVER_SQL", ""),
+			DatabaseDMS: getEnv("DATABASE_DMS", ""),
+			DatabaseUser: getEnv("DATABASE_USER", ""),
+			DatabaseUserPassword: getEnv("DATABASE_USER_PASSWORD", ""),
+			DatabaseServerIP: getEnv("DATABASE_SERVER_IP", ""),
+			DatabaseServerPort: getEnv("DATABASE_SERVER_PORT", ""),
+			DatabaseName: getEnv("DATABASE_NAME", ""),
+			MigrationsPath: getEnv("MIGRATIONS_PATH", ""),
+			SourceDriver: getEnv("SOURCE_DRIVER", ""),
+		},
+		BackendServerPort: getEnv("BACKEND_SERVER_PORT", ""),
+		CarInfoAPI: getEnv("CAR_INFO_API", ""),
+	}
+	config.DB.DatabaseURL = config.DB.DatabaseDMS + "://" + config.DB.DatabaseUser +
+	":" + config.DB.DatabaseUserPassword + "@" + config.DB.DatabaseServerIP +
+	":" + config.DB.DatabaseServerPort + "/" + config.DB.DatabaseName
+	return config
+}
+
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultVal
+}

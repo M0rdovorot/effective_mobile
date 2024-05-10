@@ -1,31 +1,26 @@
-package banners
+package cars
 
 import (
 	"fmt"
 	"net/http"
 )
 
-type ErrorBanners struct {
+type ErrorCars struct {
 	StatusCode int
 	Msg string
 }
 
-func (e ErrorBanners) Error() string {
+func (e ErrorCars) Error() string {
 	return e.Msg + fmt.Sprintf(" with status code (%d)", e.StatusCode)
 }
 
 var (
-	ErrNotFound = ErrorBanners{
+	ErrNotFound = ErrorCars{
 		StatusCode: http.StatusNotFound,
 		Msg: `{"error": "not found"}`,
 	}
 
-	ErrForbidden = ErrorBanners{
-		StatusCode: http.StatusForbidden,
-		Msg: `{"error": "forbidden"}`,
-	}
-
-	ErrResultNotOk = ErrorBanners{
+	ErrResultNotOk = ErrorCars{
 		StatusCode: http.StatusInternalServerError,
 		Msg: `{"error": "not ok"}`,
 	} 

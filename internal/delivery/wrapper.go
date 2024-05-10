@@ -20,7 +20,7 @@ type IValidatable interface {
 }
 
 type IMarshable interface {
-	// MarshalJSON() ([]byte, error) 
+	// MarshalJSON() ([]byte, error)
 	// MarshalEasyJSON(w *jwriter.Writer)
 }
 
@@ -36,30 +36,42 @@ func NewWrapper[Req IValidatable, Resp IMarshable](fn func(ctx context.Context, 
 
 func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	
+
 	ctx := ctxusecase.AddWriter(r.Context(), w)
 	ctx = ctxusecase.AddVars(ctx, mux.Vars(r))
 
-	featureId := r.URL.Query().Get("feature_id")
-	tagId := r.URL.Query().Get("tag_id")
-	limit := r.URL.Query().Get("limit")
-	offset := r.URL.Query().Get("offset")
-	use_last_revision := r.URL.Query().Get("use_last_revision")
-	ctx = ctxusecase.AddQueryVars(ctx, map[string]string{
-		"feature_id": featureId,
-		"tag_id": tagId,
-		"limit": limit,
-		"offset": offset,
-		"use_last_revision": use_last_revision,
-	})
+	queryMap := map[string]string{}
 
-	token := r.Header.Get("token")
-	ctx = ctxusecase.AddToken(ctx, token)
-	
+	if r.URL.Query().Has("regNum") {
+		queryMap["regNum"] = r.URL.Query().Get("regNum")
+	}
+	if r.URL.Query().Has("mark") {
+		queryMap["mark"] = r.URL.Query().Get("mark")
+	}
+	if r.URL.Query().Has("model") {
+		queryMap["model"] = r.URL.Query().Get("model")
+	}
+	if r.URL.Query().Has("year") {
+		queryMap["year"] = r.URL.Query().Get("year")
+	}
+	if r.URL.Query().Has("name") {
+		queryMap["name"] = r.URL.Query().Get("name")
+	}
+	if r.URL.Query().Has("surname") {
+		queryMap["surname"] = r.URL.Query().Get("surname")
+	}
+	if r.URL.Query().Has("patronymic") {
+		queryMap["patronymic"] = r.URL.Query().Get("patronymic")
+	}
+	if r.URL.Query().Has("page") {
+		queryMap["page"] = r.URL.Query().Get("page")
+	}
+	ctx = ctxusecase.AddQueryVars(ctx, queryMap)
+
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-	
+
 	var request Req
-	if !request.IsEmpty(){
+	if !request.IsEmpty() {
 		err := json.NewDecoder(body).Decode(&request)
 		if err != nil {
 			WriteHttpError(w, ErrDecoding)
@@ -68,13 +80,13 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	log.Printf("Endpoint: %s\nQuery vars: %v\nPath vars: %v\nPayload: %v\n", r.URL, queryMap, mux.Vars(r), request)
 	response, SuccesCode, err := wrapper.fn(ctx, request)
 	if err != nil {
-		log.Printf("%s: error: %v\n", r.URL, err)
+		log.Printf("Endpoint: %s\nError: %v\n", r.URL, err)
 		WriteHttpError(w, err)
 		return
 	}
-	
 
 	rawJSON, err := json.Marshal(response)
 	if err != nil {
@@ -84,7 +96,7 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.WriteHeader(SuccesCode)
-	log.Printf("%s: %d", r.URL, SuccesCode)
+	log.Printf("Endpoint: %s\nCode: %d\nResponse:%v\n", r.URL, SuccesCode, string(rawJSON))
 	if SuccesCode != http.StatusNoContent {
 		_, err = w.Write(rawJSON)
 		if err != nil {

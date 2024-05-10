@@ -4,12 +4,12 @@ CREATE TABLE public.car
 (
   PRIMARY KEY (id),
   id          serial    NOT NULL,
-  regNum      char(20)  NOT NULL,
-  mark        char(50)  NOT NULL,
-  model       char(50)  NOT NULL,
+  regnum      varchar(20)  NOT NULL,
+  mark        varchar(50)  NOT NULL,
+  model       varchar(50)  NOT NULL,
   year        smallint,
-  name        char(50)  NOT NULL,
-  surname     char(50)  NOT NULL,
+  name        varchar(50)  NOT NULL,
+  surname     varchar(50)  NOT NULL,
   patronymic  text
 );
 

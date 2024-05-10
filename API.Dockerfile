@@ -16,5 +16,6 @@ WORKDIR /
 
 COPY ./db/migrations db/migrations
 COPY --from=build /project/bin/ /bin/
+COPY ./.env .env
 
 CMD ["api"]
